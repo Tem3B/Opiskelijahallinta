@@ -1,0 +1,22 @@
+@import url('./main-layout.css');
+@import url('./views/students-view.css');
+@import url('./views/courses-view.css');
+@import url('./views/teachers-view.css');
+@import url('@fontsource/arvo/index.css');    html, spreadsheet-view-export, grid-with-filters-view-export {
+      --lumo-border-radius-s: calc(var(--lumo-size-m) / 6);
+      --lumo-border-radius-m: calc(var(--lumo-size-m) / 2);
+      --lumo-border-radius-l: var(--lumo-size-m);
+--lumo-font-family: Arvo;
+
+    }
+
+    [theme~="dark"] {
+      --lumo-base-color: hsl(216, 30%, 13%);
+      --lumo-primary-color: hsl(148, 86%, 55%);
+      --lumo-primary-color-50pct: hsla(148, 86%, 55%, 0.5);
+      --lumo-primary-color-10pct: hsla(148, 86%, 55%, 0.1);
+      --lumo-primary-text-color: hsl(146, 100%, 70%);
+      --lumo-body-text-color: hsla(214, 11%, 76%, 0.9);
+      --lumo-success-text-color: hsl(113, 95%, 50%);
+
+    }
