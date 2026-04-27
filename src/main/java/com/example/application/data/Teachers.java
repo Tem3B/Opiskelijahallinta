@@ -1,7 +1,13 @@
 package com.example.application.data;
 
+import jakarta.persistence.CascadeType;
+import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
+import jakarta.persistence.OneToMany;
 import jakarta.validation.constraints.Email;
+
+import java.util.ArrayList;
+import java.util.List;
 
 @Entity
 public class Teachers extends AbstractEntity {
@@ -11,7 +17,11 @@ public class Teachers extends AbstractEntity {
     @Email
     private String email;
     private String phone;
-    private String courses;
+
+    @OneToMany(mappedBy = "teacher")
+    private List<Courses> courses;
+
+
 
     public String getFirstName() {
         return firstName;
@@ -37,11 +47,18 @@ public class Teachers extends AbstractEntity {
     public void setPhone(String phone) {
         this.phone = phone;
     }
-    public String getCourses() {
+
+
+    public List<Courses> getCourses() {
         return courses;
     }
-    public void setCourses(String courses) {
+    public void setCourses(List<Courses> courses) {
         this.courses = courses;
     }
+
+    public String getFullName() {
+        return firstName + " " + lastName;
+    }
+
 
 }

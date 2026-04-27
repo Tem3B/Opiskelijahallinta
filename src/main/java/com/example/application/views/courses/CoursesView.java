@@ -1,10 +1,13 @@
 package com.example.application.views.courses;
 
 import com.example.application.data.Courses;
+import com.example.application.data.Teachers;
 import com.example.application.services.CoursesService;
+import com.example.application.services.TeachersService;
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.button.ButtonVariant;
+import com.vaadin.flow.component.combobox.ComboBox;
 import com.vaadin.flow.component.formlayout.FormLayout;
 import com.vaadin.flow.component.grid.Grid;
 import com.vaadin.flow.component.grid.GridVariant;
@@ -25,6 +28,7 @@ import com.vaadin.flow.router.PageTitle;
 import com.vaadin.flow.router.Route;
 import com.vaadin.flow.spring.data.VaadinSpringDataHelpers;
 import java.util.Optional;
+import org.springframework.data.domain.Pageable;
 import org.springframework.orm.ObjectOptimisticLockingFailureException;
 import org.vaadin.lineawesome.LineAwesomeIconUrl;
 
@@ -39,7 +43,7 @@ public class CoursesView extends Div implements BeforeEnterObserver {
     private final Grid<Courses> grid = new Grid<>(Courses.class, false);
 
     private TextField name;
-    private TextField teacher;
+    private ComboBox<Teachers> teacher;
     private TextField about;
     private TextField difficulty;
     private TextField studentCount;
@@ -52,9 +56,11 @@ public class CoursesView extends Div implements BeforeEnterObserver {
     private Courses courses;
 
     private final CoursesService coursesService;
+    private final TeachersService teachersService;
 
-    public CoursesView(CoursesService coursesService) {
+    public CoursesView(CoursesService coursesService, TeachersService teachersService) {
         this.coursesService = coursesService;
+        this.teachersService = teachersService;
         addClassNames("courses-view");
 
         // Create UI
@@ -67,7 +73,9 @@ public class CoursesView extends Div implements BeforeEnterObserver {
 
         // Configure Grid
         grid.addColumn("name").setAutoWidth(true);
-        grid.addColumn("teacher").setAutoWidth(true);
+        grid.addColumn(course -> course.getTeacher() != null ? course.getTeacher().getFullName() : "")
+                .setHeader("Teacher")
+                .setAutoWidth(true);
         grid.addColumn("about").setAutoWidth(true);
         grid.addColumn("difficulty").setAutoWidth(true);
         grid.addColumn("studentCount").setAutoWidth(true);
@@ -150,7 +158,9 @@ public class CoursesView extends Div implements BeforeEnterObserver {
 
         FormLayout formLayout = new FormLayout();
         name = new TextField("Name");
-        teacher = new TextField("Teacher");
+        teacher = new ComboBox<>("Teacher");
+        teacher.setItems(teachersService.list(Pageable.unpaged()).getContent());
+        teacher.setItemLabelGenerator(Teachers::getFullName);
         about = new TextField("About");
         difficulty = new TextField("Difficulty");
         studentCount = new TextField("Student Count");

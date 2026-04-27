@@ -1,12 +1,18 @@
 package com.example.application.data;
 
-import jakarta.persistence.Entity;
+import jakarta.persistence.*;
 
 @Entity
 public class Courses extends AbstractEntity {
 
     private String name;
-    private String teacher;
+
+
+    @ManyToOne
+    @JoinColumn(name = "teacher_id")
+    private Teachers teacher;
+
+
     private String about;
     private Integer difficulty;
     private Integer studentCount;
@@ -17,12 +23,15 @@ public class Courses extends AbstractEntity {
     public void setName(String name) {
         this.name = name;
     }
-    public String getTeacher() {
+
+    public Teachers getTeacher() {
         return teacher;
     }
-    public void setTeacher(String teacher) {
+
+    public void setTeacher(Teachers teacher) {
         this.teacher = teacher;
     }
+
     public String getAbout() {
         return about;
     }

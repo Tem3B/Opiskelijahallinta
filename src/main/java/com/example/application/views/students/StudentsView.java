@@ -1,10 +1,13 @@
 package com.example.application.views.students;
 
+import com.example.application.data.Courses;
 import com.example.application.data.Students;
+import com.example.application.services.CoursesService;
 import com.example.application.services.StudentsService;
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.button.ButtonVariant;
+import com.vaadin.flow.component.combobox.ComboBox;
 import com.vaadin.flow.component.formlayout.FormLayout;
 import com.vaadin.flow.component.grid.Grid;
 import com.vaadin.flow.component.grid.GridVariant;
@@ -24,6 +27,7 @@ import com.vaadin.flow.router.PageTitle;
 import com.vaadin.flow.router.Route;
 import com.vaadin.flow.spring.data.VaadinSpringDataHelpers;
 import java.util.Optional;
+import org.springframework.data.domain.Pageable;
 import org.springframework.orm.ObjectOptimisticLockingFailureException;
 import org.vaadin.lineawesome.LineAwesomeIconUrl;
 
@@ -41,7 +45,7 @@ public class StudentsView extends Div implements BeforeEnterObserver {
     private TextField lastName;
     private TextField email;
     private TextField phone;
-    private TextField courses;
+    private ComboBox<Courses> courses;
 
     private final Button cancel = new Button("Cancel");
     private final Button save = new Button("Save");
@@ -51,9 +55,11 @@ public class StudentsView extends Div implements BeforeEnterObserver {
     private Students students;
 
     private final StudentsService studentsService;
+    private final CoursesService coursesService;
 
-    public StudentsView(StudentsService studentsService) {
+    public StudentsView(StudentsService studentsService, CoursesService coursesService) {
         this.studentsService = studentsService;
+        this.coursesService = coursesService;
         addClassNames("students-view");
 
         // Create UI
@@ -86,7 +92,18 @@ public class StudentsView extends Div implements BeforeEnterObserver {
         // Configure Form
         binder = new BeanValidationBinder<>(Students.class);
 
-        // Bind fields. This is where you'd define e.g. validation rules
+        // Bind courses field manually with converter (Courses -> String)
+        binder.forField(courses)
+                .withConverter(
+                    course -> course != null ? course.getName() : "",
+                    courseName -> courseName != null && !courseName.isEmpty()
+                        ? coursesService.list(Pageable.unpaged()).getContent().stream()
+                            .filter(c -> c.getName().equals(courseName))
+                            .findFirst()
+                            .orElse(null)
+                        : null
+                )
+                .bind("courses");
 
         binder.bindInstanceFields(this);
 
@@ -148,7 +165,9 @@ public class StudentsView extends Div implements BeforeEnterObserver {
         lastName = new TextField("Last Name");
         email = new TextField("Email");
         phone = new TextField("Phone");
-        courses = new TextField("Courses");
+        courses = new ComboBox<>("Courses");
+        courses.setItems(coursesService.list(Pageable.unpaged()).getContent());
+        courses.setItemLabelGenerator(Courses::getName);
         formLayout.add(firstName, lastName, email, phone, courses);
 
         editorDiv.add(formLayout);
@@ -184,6 +203,15 @@ public class StudentsView extends Div implements BeforeEnterObserver {
 
     private void populateForm(Students value) {
         this.students = value;
+        if (value != null && value.getCourses() != null && !value.getCourses().isEmpty()) {
+            // Etsi kurssi nimen perusteella
+            coursesService.list(Pageable.unpaged()).getContent().stream()
+                    .filter(c -> c.getName().equals(value.getCourses()))
+                    .findFirst()
+                    .ifPresent(courses::setValue);
+        } else {
+            courses.setValue(null);
+        }
         binder.readBean(this.students);
 
     }

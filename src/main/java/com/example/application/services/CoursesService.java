@@ -2,6 +2,7 @@ package com.example.application.services;
 
 import com.example.application.data.Courses;
 import com.example.application.data.CoursesRepository;
+import java.util.List;
 import java.util.Optional;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -39,6 +40,12 @@ public class CoursesService {
 
     public int count() {
         return (int) repository.count();
+    }
+
+    public List<Courses> findByTeacherId(Long teacherId) {
+        return repository.findAll().stream()
+                .filter(course -> course.getTeacher() != null && course.getTeacher().getId().equals(teacherId))
+                .toList();
     }
 
 }
