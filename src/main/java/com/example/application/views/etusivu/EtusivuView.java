@@ -23,10 +23,10 @@ public class EtusivuView extends VerticalLayout {
         img.setWidth("200px");
         add(img);
 
-        H2 header = new H2("This place intentionally left empty");
+        H2 header = new H2("Tervetuloa opiskelijahallintajärjestelmään!");
         header.addClassNames(Margin.Top.XLARGE, Margin.Bottom.MEDIUM);
         add(header);
-        add(new Paragraph("It’s a place where you can grow your own UI 🤗"));
+        add(new Paragraph("Täällä voit hallita opiskelijoita, kursseja ja opettajia"));
 
         setSizeFull();
         setJustifyContentMode(JustifyContentMode.CENTER);
