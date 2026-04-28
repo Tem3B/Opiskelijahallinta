@@ -8,6 +8,7 @@ import com.vaadin.flow.component.UI;
 import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.button.ButtonVariant;
 import com.vaadin.flow.component.combobox.ComboBox;
+import com.vaadin.flow.component.dialog.Dialog;
 import com.vaadin.flow.component.formlayout.FormLayout;
 import com.vaadin.flow.component.grid.Grid;
 import com.vaadin.flow.component.grid.GridVariant;
@@ -46,10 +47,10 @@ public class CoursesView extends Div implements BeforeEnterObserver {
     private ComboBox<Teachers> teacher;
     private TextField about;
     private TextField difficulty;
-    private TextField studentCount;
 
     private final Button cancel = new Button("Cancel");
     private final Button save = new Button("Save");
+    private final Button delete = new Button("Delete");
 
     private final BeanValidationBinder<Courses> binder;
 
@@ -68,17 +69,19 @@ public class CoursesView extends Div implements BeforeEnterObserver {
 
         createGridLayout(splitLayout);
         createEditorLayout(splitLayout);
+        delete.setEnabled(false);
 
         add(splitLayout);
 
         // Configure Grid
         grid.addColumn("name").setAutoWidth(true);
-        grid.addColumn(course -> course.getTeacher() != null ? course.getTeacher().getFullName() : "")
-                .setHeader("Teacher")
-                .setAutoWidth(true);
+        grid.addColumn(course -> course.getTeacher() != null ? course.getTeacher().getFullName() : "").setHeader("Opettaja");
+
         grid.addColumn("about").setAutoWidth(true);
         grid.addColumn("difficulty").setAutoWidth(true);
-        grid.addColumn("studentCount").setAutoWidth(true);
+        grid.addColumn(course -> course.getStudents().size())
+                .setHeader("Students")
+                .setAutoWidth(true);
         grid.setItems(query -> coursesService.list(VaadinSpringDataHelpers.toSpringPageRequest(query)).stream());
         grid.addThemeVariants(GridVariant.LUMO_NO_BORDER);
 
@@ -98,8 +101,6 @@ public class CoursesView extends Div implements BeforeEnterObserver {
         // Bind fields. This is where you'd define e.g. validation rules
         binder.forField(difficulty).withConverter(new StringToIntegerConverter("Only numbers are allowed"))
                 .bind("difficulty");
-        binder.forField(studentCount).withConverter(new StringToIntegerConverter("Only numbers are allowed"))
-                .bind("studentCount");
 
         binder.bindInstanceFields(this);
 
@@ -128,6 +129,8 @@ public class CoursesView extends Div implements BeforeEnterObserver {
                 Notification.show("Failed to update the data. Check again that all values are valid");
             }
         });
+
+        delete.addClickListener(e -> openDeleteDialog());
     }
 
     @Override
@@ -163,8 +166,7 @@ public class CoursesView extends Div implements BeforeEnterObserver {
         teacher.setItemLabelGenerator(Teachers::getFullName);
         about = new TextField("About");
         difficulty = new TextField("Difficulty");
-        studentCount = new TextField("Student Count");
-        formLayout.add(name, teacher, about, difficulty, studentCount);
+        formLayout.add(name, teacher, about, difficulty);
 
         editorDiv.add(formLayout);
         createButtonLayout(editorLayoutDiv);
@@ -175,10 +177,34 @@ public class CoursesView extends Div implements BeforeEnterObserver {
     private void createButtonLayout(Div editorLayoutDiv) {
         HorizontalLayout buttonLayout = new HorizontalLayout();
         buttonLayout.setClassName("button-layout");
+        delete.addThemeVariants(ButtonVariant.LUMO_ERROR);
         cancel.addThemeVariants(ButtonVariant.LUMO_TERTIARY);
         save.addThemeVariants(ButtonVariant.LUMO_PRIMARY);
-        buttonLayout.add(save, cancel);
+        buttonLayout.add(delete, save, cancel);
         editorLayoutDiv.add(buttonLayout);
+    }
+
+    private void openDeleteDialog() {
+        if (this.courses == null || this.courses.getId() == null) {
+            return;
+        }
+
+        Dialog dialog = new Dialog();
+        dialog.add("Delete this course?");
+
+        Button confirm = new Button("Delete", event -> {
+            coursesService.delete(this.courses.getId());
+            dialog.close();
+            clearForm();
+            refreshGrid();
+            UI.getCurrent().navigate(CoursesView.class);
+        });
+        confirm.addThemeVariants(ButtonVariant.LUMO_ERROR);
+
+        Button cancelButton = new Button("Cancel", event -> dialog.close());
+
+        dialog.add(confirm, cancelButton);
+        dialog.open();
     }
 
     private void createGridLayout(SplitLayout splitLayout) {
@@ -199,6 +225,7 @@ public class CoursesView extends Div implements BeforeEnterObserver {
 
     private void populateForm(Courses value) {
         this.courses = value;
+        delete.setEnabled(value != null);
         binder.readBean(this.courses);
 
     }

@@ -1,20 +1,24 @@
 package com.example.application.services;
 
 import com.example.application.data.Teachers;
+import com.example.application.data.CoursesRepository;
 import com.example.application.data.TeachersRepository;
 import java.util.Optional;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 @Service
 public class TeachersService {
 
     private final TeachersRepository repository;
+    private final CoursesRepository coursesRepository;
 
-    public TeachersService(TeachersRepository repository) {
+    public TeachersService(TeachersRepository repository, CoursesRepository coursesRepository) {
         this.repository = repository;
+        this.coursesRepository = coursesRepository;
     }
 
     public Optional<Teachers> get(Long id) {
@@ -25,7 +29,9 @@ public class TeachersService {
         return repository.save(entity);
     }
 
+    @Transactional
     public void delete(Long id) {
+        coursesRepository.clearTeacherCourses(id);
         repository.deleteById(id);
     }
 

@@ -1,7 +1,10 @@
 package com.example.application.data;
 
-import jakarta.persistence.Entity;
+import jakarta.persistence.*;
 import jakarta.validation.constraints.Email;
+
+import java.util.HashSet;
+import java.util.Set;
 
 @Entity
 public class Students extends AbstractEntity {
@@ -11,7 +14,15 @@ public class Students extends AbstractEntity {
     @Email
     private String email;
     private String phone;
-    private String courses;
+    @ManyToMany(fetch = jakarta.persistence.FetchType.EAGER)
+    @JoinTable(name = "student_courses",
+            joinColumns = @JoinColumn(name = "student_id"),
+            inverseJoinColumns = @JoinColumn(name = "course_id"))
+    private Set<Courses> courses = new HashSet<>();
+
+    @OneToOne(cascade = CascadeType.ALL)
+    @JoinColumn(name = "address_id")
+    private Address address;
 
     public String getFirstName() {
         return firstName;
@@ -37,11 +48,19 @@ public class Students extends AbstractEntity {
     public void setPhone(String phone) {
         this.phone = phone;
     }
-    public String getCourses() {
+
+    public Set<Courses> getCourses() {
         return courses;
     }
-    public void setCourses(String courses) {
+    public void setCourses(Set<Courses> courses) {
         this.courses = courses;
+    }
+
+    public Address getAddress() {
+        return address;
+    }
+    public void setAddress(Address address) {
+        this.address = address;
     }
 
 }

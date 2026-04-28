@@ -7,7 +7,8 @@ import com.example.application.services.StudentsService;
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.button.ButtonVariant;
-import com.vaadin.flow.component.combobox.ComboBox;
+import com.vaadin.flow.component.combobox.MultiSelectComboBox;
+import com.vaadin.flow.component.dialog.Dialog;
 import com.vaadin.flow.component.formlayout.FormLayout;
 import com.vaadin.flow.component.grid.Grid;
 import com.vaadin.flow.component.grid.GridVariant;
@@ -27,6 +28,8 @@ import com.vaadin.flow.router.PageTitle;
 import com.vaadin.flow.router.Route;
 import com.vaadin.flow.spring.data.VaadinSpringDataHelpers;
 import java.util.Optional;
+import java.util.Set;
+import java.util.stream.Collectors;
 import org.springframework.data.domain.Pageable;
 import org.springframework.orm.ObjectOptimisticLockingFailureException;
 import org.vaadin.lineawesome.LineAwesomeIconUrl;
@@ -45,10 +48,16 @@ public class StudentsView extends Div implements BeforeEnterObserver {
     private TextField lastName;
     private TextField email;
     private TextField phone;
-    private ComboBox<Courses> courses;
+    private TextField street;
+    private TextField buildingNumber;
+    private TextField city;
+    private TextField postalCode;
+    private TextField country;
+    private MultiSelectComboBox<Courses> courses;
 
     private final Button cancel = new Button("Cancel");
     private final Button save = new Button("Save");
+    private final Button delete = new Button("Delete");
 
     private final BeanValidationBinder<Students> binder;
 
@@ -67,6 +76,7 @@ public class StudentsView extends Div implements BeforeEnterObserver {
 
         createGridLayout(splitLayout);
         createEditorLayout(splitLayout);
+        delete.setEnabled(false);
 
         add(splitLayout);
 
@@ -75,7 +85,32 @@ public class StudentsView extends Div implements BeforeEnterObserver {
         grid.addColumn("lastName").setAutoWidth(true);
         grid.addColumn("email").setAutoWidth(true);
         grid.addColumn("phone").setAutoWidth(true);
-        grid.addColumn("courses").setAutoWidth(true);
+        grid.addColumn(student -> {
+            if (student.getAddress() != null) {
+                String street = student.getAddress().getStreet();
+                return street != null ? street : "";
+            }
+            return "";
+        }).setHeader("Street").setAutoWidth(true);
+        grid.addColumn(student -> {
+            if (student.getAddress() != null) {
+                String buildingNumber = student.getAddress().getBuildingNumber();
+                return buildingNumber != null ? buildingNumber : "";
+            }
+            return "";
+        }).setHeader("Building Number").setAutoWidth(true);
+        grid.addColumn(student -> {
+            if (student.getAddress() != null) {
+                String city = student.getAddress().getCity();
+                return city != null ? city : "";
+            }
+            return "";
+        }).setHeader("City").setAutoWidth(true);
+        grid.addColumn(student -> student.getCourses().stream()
+                .map(Courses::getName)
+                .collect(Collectors.joining(", ")))
+                .setHeader("Courses")
+                .setAutoWidth(true);
         grid.setItems(query -> studentsService.list(VaadinSpringDataHelpers.toSpringPageRequest(query)).stream());
         grid.addThemeVariants(GridVariant.LUMO_NO_BORDER);
 
@@ -92,18 +127,85 @@ public class StudentsView extends Div implements BeforeEnterObserver {
         // Configure Form
         binder = new BeanValidationBinder<>(Students.class);
 
-        // Bind courses field manually with converter (Courses -> String)
+        // Bind courses field manually with converter (Set<Courses> <-> Set<Courses>)
         binder.forField(courses)
-                .withConverter(
-                    course -> course != null ? course.getName() : "",
-                    courseName -> courseName != null && !courseName.isEmpty()
-                        ? coursesService.list(Pageable.unpaged()).getContent().stream()
-                            .filter(c -> c.getName().equals(courseName))
-                            .findFirst()
-                            .orElse(null)
-                        : null
-                )
                 .bind("courses");
+
+        // Bind address fields
+        binder.forField(street)
+                .bind(student -> {
+                    if (student != null && student.getAddress() != null && student.getAddress().getStreet() != null) {
+                        return student.getAddress().getStreet();
+                    }
+                    return "";
+                },
+                (student, value) -> {
+                    if (student == null) return;
+                    if (student.getAddress() == null) {
+                        student.setAddress(new com.example.application.data.Address());
+                    }
+                    student.getAddress().setStreet(value);
+                });
+
+        binder.forField(buildingNumber)
+                .bind(student -> {
+                    if (student != null && student.getAddress() != null && student.getAddress().getBuildingNumber() != null) {
+                        return student.getAddress().getBuildingNumber();
+                    }
+                    return "";
+                },
+                (student, value) -> {
+                    if (student == null) return;
+                    if (student.getAddress() == null) {
+                        student.setAddress(new com.example.application.data.Address());
+                    }
+                    student.getAddress().setBuildingNumber(value);
+                });
+
+        binder.forField(city)
+                .bind(student -> {
+                    if (student != null && student.getAddress() != null && student.getAddress().getCity() != null) {
+                        return student.getAddress().getCity();
+                    }
+                    return "";
+                },
+                (student, value) -> {
+                    if (student == null) return;
+                    if (student.getAddress() == null) {
+                        student.setAddress(new com.example.application.data.Address());
+                    }
+                    student.getAddress().setCity(value);
+                });
+
+        binder.forField(postalCode)
+                .bind(student -> {
+                    if (student != null && student.getAddress() != null && student.getAddress().getPostalCode() != null) {
+                        return student.getAddress().getPostalCode();
+                    }
+                    return "";
+                },
+                (student, value) -> {
+                    if (student == null) return;
+                    if (student.getAddress() == null) {
+                        student.setAddress(new com.example.application.data.Address());
+                    }
+                    student.getAddress().setPostalCode(value);
+                });
+
+        binder.forField(country)
+                .bind(student -> {
+                    if (student != null && student.getAddress() != null && student.getAddress().getCountry() != null) {
+                        return student.getAddress().getCountry();
+                    }
+                    return "";
+                },
+                (student, value) -> {
+                    if (student == null) return;
+                    if (student.getAddress() == null) {
+                        student.setAddress(new com.example.application.data.Address());
+                    }
+                    student.getAddress().setCountry(value);
+                });
 
         binder.bindInstanceFields(this);
 
@@ -132,6 +234,8 @@ public class StudentsView extends Div implements BeforeEnterObserver {
                 Notification.show("Failed to update the data. Check again that all values are valid");
             }
         });
+
+        delete.addClickListener(e -> openDeleteDialog());
     }
 
     @Override
@@ -165,10 +269,15 @@ public class StudentsView extends Div implements BeforeEnterObserver {
         lastName = new TextField("Last Name");
         email = new TextField("Email");
         phone = new TextField("Phone");
-        courses = new ComboBox<>("Courses");
+        street = new TextField("Street");
+        buildingNumber = new TextField("Building Number");
+        city = new TextField("City");
+        postalCode = new TextField("Postal Code");
+        country = new TextField("Country");
+        courses = new MultiSelectComboBox<>("Courses");
         courses.setItems(coursesService.list(Pageable.unpaged()).getContent());
         courses.setItemLabelGenerator(Courses::getName);
-        formLayout.add(firstName, lastName, email, phone, courses);
+        formLayout.add(firstName, lastName, email, phone, street, buildingNumber, city, postalCode, country, courses);
 
         editorDiv.add(formLayout);
         createButtonLayout(editorLayoutDiv);
@@ -179,10 +288,34 @@ public class StudentsView extends Div implements BeforeEnterObserver {
     private void createButtonLayout(Div editorLayoutDiv) {
         HorizontalLayout buttonLayout = new HorizontalLayout();
         buttonLayout.setClassName("button-layout");
+        delete.addThemeVariants(ButtonVariant.LUMO_ERROR);
         cancel.addThemeVariants(ButtonVariant.LUMO_TERTIARY);
         save.addThemeVariants(ButtonVariant.LUMO_PRIMARY);
-        buttonLayout.add(save, cancel);
+        buttonLayout.add(delete, save, cancel);
         editorLayoutDiv.add(buttonLayout);
+    }
+
+    private void openDeleteDialog() {
+        if (this.students == null || this.students.getId() == null) {
+            return;
+        }
+
+        Dialog dialog = new Dialog();
+        dialog.add("Delete this student?");
+
+        Button confirm = new Button("Delete", event -> {
+            studentsService.delete(this.students.getId());
+            dialog.close();
+            clearForm();
+            refreshGrid();
+            UI.getCurrent().navigate(StudentsView.class);
+        });
+        confirm.addThemeVariants(ButtonVariant.LUMO_ERROR);
+
+        Button cancelButton = new Button("Cancel", event -> dialog.close());
+
+        dialog.add(confirm, cancelButton);
+        dialog.open();
     }
 
     private void createGridLayout(SplitLayout splitLayout) {
@@ -203,14 +336,11 @@ public class StudentsView extends Div implements BeforeEnterObserver {
 
     private void populateForm(Students value) {
         this.students = value;
-        if (value != null && value.getCourses() != null && !value.getCourses().isEmpty()) {
-            // Etsi kurssi nimen perusteella
-            coursesService.list(Pageable.unpaged()).getContent().stream()
-                    .filter(c -> c.getName().equals(value.getCourses()))
-                    .findFirst()
-                    .ifPresent(courses::setValue);
+        delete.setEnabled(value != null);
+        if (value != null && !value.getCourses().isEmpty()) {
+            courses.setValue(value.getCourses());
         } else {
-            courses.setValue(null);
+            courses.setValue(Set.of());
         }
         binder.readBean(this.students);
 

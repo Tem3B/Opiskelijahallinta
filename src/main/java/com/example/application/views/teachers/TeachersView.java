@@ -1,11 +1,13 @@
 package com.example.application.views.teachers;
 
+import com.example.application.data.Courses;
 import com.example.application.data.Teachers;
 import com.example.application.services.CoursesService;
 import com.example.application.services.TeachersService;
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.button.ButtonVariant;
+import com.vaadin.flow.component.dialog.Dialog;
 import com.vaadin.flow.component.formlayout.FormLayout;
 import com.vaadin.flow.component.grid.Grid;
 import com.vaadin.flow.component.grid.GridVariant;
@@ -47,6 +49,7 @@ public class TeachersView extends Div implements BeforeEnterObserver {
 
     private final Button cancel = new Button("Cancel");
     private final Button save = new Button("Save");
+    private final Button delete = new Button("Delete");
 
     private final BeanValidationBinder<Teachers> binder;
 
@@ -65,6 +68,7 @@ public class TeachersView extends Div implements BeforeEnterObserver {
 
         createGridLayout(splitLayout);
         createEditorLayout(splitLayout);
+        delete.setEnabled(false);
 
         add(splitLayout);
 
@@ -74,7 +78,7 @@ public class TeachersView extends Div implements BeforeEnterObserver {
         grid.addColumn("email").setAutoWidth(true);
         grid.addColumn("phone").setAutoWidth(true);
         grid.addColumn(teacher -> coursesService.findByTeacherId(teacher.getId()).stream()
-                .map(c -> c.getName()).toList().toString())
+                .map(Courses::getName).toList().toString())
                 .setHeader("Courses")
                 .setAutoWidth(true);
         grid.setItems(query -> teachersService.list(VaadinSpringDataHelpers.toSpringPageRequest(query)).stream());
@@ -122,6 +126,8 @@ public class TeachersView extends Div implements BeforeEnterObserver {
                 Notification.show("Failed to update the data. Check again that all values are valid");
             }
         });
+
+        delete.addClickListener(e -> openDeleteDialog());
     }
 
     @Override
@@ -168,10 +174,34 @@ public class TeachersView extends Div implements BeforeEnterObserver {
     private void createButtonLayout(Div editorLayoutDiv) {
         HorizontalLayout buttonLayout = new HorizontalLayout();
         buttonLayout.setClassName("button-layout");
+        delete.addThemeVariants(ButtonVariant.LUMO_ERROR);
         cancel.addThemeVariants(ButtonVariant.LUMO_TERTIARY);
         save.addThemeVariants(ButtonVariant.LUMO_PRIMARY);
-        buttonLayout.add(save, cancel);
+        buttonLayout.add(delete, save, cancel);
         editorLayoutDiv.add(buttonLayout);
+    }
+
+    private void openDeleteDialog() {
+        if (this.teachers == null) {
+            return;
+        }
+
+        Dialog dialog = new Dialog();
+        dialog.add("Delete this teacher?");
+
+        Button confirm = new Button("Delete", event -> {
+            teachersService.delete(this.teachers.getId());
+            dialog.close();
+            clearForm();
+            refreshGrid();
+            UI.getCurrent().navigate(TeachersView.class);
+        });
+        confirm.addThemeVariants(ButtonVariant.LUMO_ERROR);
+
+        Button cancelButton = new Button("Cancel", event -> dialog.close());
+
+        dialog.add(confirm, cancelButton);
+        dialog.open();
     }
 
     private void createGridLayout(SplitLayout splitLayout) {
@@ -192,9 +222,10 @@ public class TeachersView extends Div implements BeforeEnterObserver {
 
     private void populateForm(Teachers value) {
         this.teachers = value;
+        delete.setEnabled(value != null);
         if (value != null) {
             String courseList = coursesService.findByTeacherId(value.getId()).stream()
-                    .map(c -> c.getName())
+                    .map(Courses::getName)
                     .toList().toString();
             coursesDisplay.setValue(courseList);
         } else {

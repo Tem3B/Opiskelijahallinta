@@ -1,21 +1,23 @@
 package com.example.application.data;
 
 import jakarta.persistence.*;
+import java.util.HashSet;
+import java.util.Set;
 
 @Entity
 public class Courses extends AbstractEntity {
 
     private String name;
 
-
     @ManyToOne
     @JoinColumn(name = "teacher_id")
     private Teachers teacher;
 
+    @ManyToMany(mappedBy = "courses")
+    private Set<Students> students = new HashSet<>();
 
     private String about;
     private Integer difficulty;
-    private Integer studentCount;
 
     public String getName() {
         return name;
@@ -44,11 +46,12 @@ public class Courses extends AbstractEntity {
     public void setDifficulty(Integer difficulty) {
         this.difficulty = difficulty;
     }
-    public Integer getStudentCount() {
-        return studentCount;
+
+    public Set<Students> getStudents() {
+        return students;
     }
-    public void setStudentCount(Integer studentCount) {
-        this.studentCount = studentCount;
+    public void setStudents(Set<Students> students) {
+        this.students = students;
     }
 
 }

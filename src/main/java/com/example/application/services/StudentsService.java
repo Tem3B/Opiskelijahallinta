@@ -7,6 +7,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 @Service
 public class StudentsService {
@@ -25,8 +26,12 @@ public class StudentsService {
         return repository.save(entity);
     }
 
+    @Transactional
     public void delete(Long id) {
-        repository.deleteById(id);
+        repository.findById(id).ifPresent(student -> {
+            student.getCourses().clear();
+            repository.delete(student);
+        });
     }
 
     public Page<Students> list(Pageable pageable) {
