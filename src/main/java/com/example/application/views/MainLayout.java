@@ -70,9 +70,9 @@ public class MainLayout extends AppLayout implements AfterNavigationObserver {
     }
 
     private Footer createFooter() {
-        Footer layout = new Footer();
-
-        return layout;
+        Footer footer = new Footer();
+        footer.add(new Span("© 2026 Opiskelijahallintajärjestelmä."));
+        return footer;
     }
 
     @Override

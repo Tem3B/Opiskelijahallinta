@@ -4,6 +4,7 @@ import com.example.application.data.Courses;
 import com.example.application.data.Teachers;
 import com.example.application.services.CoursesService;
 import com.example.application.services.TeachersService;
+import com.example.application.views.MainLayout;
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.button.ButtonVariant;
@@ -34,7 +35,7 @@ import org.springframework.orm.ObjectOptimisticLockingFailureException;
 import org.vaadin.lineawesome.LineAwesomeIconUrl;
 
 @PageTitle("Courses")
-@Route("courses/:coursesID?/:action?(edit)")
+@Route(value = "courses/:coursesID?/:action?(edit)", layout = MainLayout.class)
 @Menu(order = 2, icon = LineAwesomeIconUrl.ARROW_RIGHT_SOLID)
 public class CoursesView extends Div implements BeforeEnterObserver {
 
