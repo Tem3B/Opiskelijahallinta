@@ -14,6 +14,9 @@ import com.vaadin.flow.router.AfterNavigationEvent;
 import com.vaadin.flow.router.AfterNavigationObserver;
 import com.vaadin.flow.router.Layout;
 import com.vaadin.flow.server.auth.AnonymousAllowed;
+import org.springframework.security.authentication.AnonymousAuthenticationToken;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import com.vaadin.flow.server.menu.MenuConfiguration;
 import com.vaadin.flow.server.menu.MenuEntry;
 import com.vaadin.flow.theme.lumo.LumoUtility;
@@ -56,17 +59,33 @@ public class MainLayout extends AppLayout implements AfterNavigationObserver {
 
     private SideNav createNavigation() {
         SideNav nav = new SideNav();
-
-        List<MenuEntry> menuEntries = MenuConfiguration.getMenuEntries();
-        menuEntries.forEach(entry -> {
-            if (entry.icon() != null) {
-                nav.addItem(new SideNavItem(entry.title(), entry.path(), new SvgIcon(entry.icon())));
-            } else {
-                nav.addItem(new SideNavItem(entry.title(), entry.path()));
-            }
-        });
+        // Show menu entries only to authenticated users. For anonymous users show only the home link.
+        if (isUserLoggedIn()) {
+            List<MenuEntry> menuEntries = MenuConfiguration.getMenuEntries();
+            menuEntries.forEach(entry -> {
+                if (entry.icon() != null) {
+                    nav.addItem(new SideNavItem(entry.title(), entry.path(), new SvgIcon(entry.icon())));
+                } else {
+                    nav.addItem(new SideNavItem(entry.title(), entry.path()));
+                }
+            });
+        } else {
+            // add only the root/home link
+            nav.addItem(new SideNavItem("Etusivu", ""));
+        }
 
         return nav;
+    }
+
+    private boolean isUserLoggedIn() {
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        if (authentication == null) {
+            return false;
+        }
+        if (!authentication.isAuthenticated()) {
+            return false;
+        }
+        return !(authentication instanceof AnonymousAuthenticationToken);
     }
 
     private Footer createFooter() {

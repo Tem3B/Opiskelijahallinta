@@ -2,6 +2,7 @@ package com.example.application.views.teachers;
 
 import com.example.application.data.Courses;
 import com.example.application.data.Teachers;
+import com.example.application.data.TeacherSearchCriteria;
 import com.example.application.services.CoursesService;
 import com.example.application.services.TeachersService;
 import com.example.application.views.MainLayout;
@@ -17,6 +18,7 @@ import com.vaadin.flow.component.notification.Notification;
 import com.vaadin.flow.component.notification.Notification.Position;
 import com.vaadin.flow.component.notification.NotificationVariant;
 import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
+import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 import com.vaadin.flow.component.splitlayout.SplitLayout;
 import com.vaadin.flow.component.textfield.TextField;
 import com.vaadin.flow.data.binder.BeanValidationBinder;
@@ -42,19 +44,30 @@ public class TeachersView extends Div implements BeforeEnterObserver {
 
     private final Grid<Teachers> grid = new Grid<>(Teachers.class, false);
 
+    // Search fields
+    private TextField searchFirstName;
+    private TextField searchLastName;
+    private TextField searchEmail;
+    private TextField searchCourseName;
+
+    // Edit form fields
     private TextField firstName;
     private TextField lastName;
     private TextField email;
     private TextField phone;
     private TextField coursesDisplay;
 
+    //Buttons
     private final Button cancel = new Button("Cancel");
     private final Button save = new Button("Save");
     private final Button delete = new Button("Delete");
+    private final Button search = new Button("Search");
+    private final Button reset = new Button("Reset");
 
     private final BeanValidationBinder<Teachers> binder;
 
     private Teachers teachers;
+    private TeacherSearchCriteria currentSearchCriteria;
 
     private final TeachersService teachersService;
     private final CoursesService coursesService;
@@ -82,7 +95,9 @@ public class TeachersView extends Div implements BeforeEnterObserver {
                 .map(Courses::getName).toList().toString())
                 .setHeader("Courses")
                 .setAutoWidth(true);
-        grid.setItems(query -> teachersService.list(VaadinSpringDataHelpers.toSpringPageRequest(query)).stream());
+        
+        // Initialize with default list
+        loadTeachers();
         grid.addThemeVariants(GridVariant.LUMO_NO_BORDER);
 
         // when a row is selected or deselected, populate form
@@ -129,6 +144,12 @@ public class TeachersView extends Div implements BeforeEnterObserver {
         });
 
         delete.addClickListener(e -> openDeleteDialog());
+        
+        // Search button handler
+        search.addClickListener(e -> performSearch());
+        
+        // Reset button handler
+        reset.addClickListener(e -> resetSearch());
     }
 
     @Override
@@ -149,6 +170,55 @@ public class TeachersView extends Div implements BeforeEnterObserver {
         }
     }
 
+    /**
+     * Perform search
+     */
+    private void performSearch() {
+        currentSearchCriteria = new TeacherSearchCriteria();
+        
+        // Set search criteria from UI fields
+        if (!searchFirstName.isEmpty()) {
+            currentSearchCriteria.setFirstName(searchFirstName.getValue());
+        }
+        if (!searchLastName.isEmpty()) {
+            currentSearchCriteria.setLastName(searchLastName.getValue());
+        }
+        if (!searchEmail.isEmpty()) {
+            currentSearchCriteria.setEmail(searchEmail.getValue());
+        }
+        if (!searchCourseName.isEmpty()) {
+            currentSearchCriteria.setCourseName(searchCourseName.getValue());
+        }
+
+        loadTeachers();
+    }
+
+    /**
+     * Reset search
+     */
+    private void resetSearch() {
+        searchFirstName.clear();
+        searchLastName.clear();
+        searchEmail.clear();
+        searchCourseName.clear();
+        currentSearchCriteria = null;
+        loadTeachers();
+    }
+
+    /**
+     * Load teachers based on criteria
+     */
+    private void loadTeachers() {
+        if (currentSearchCriteria != null && currentSearchCriteria.hasCriteria()) {
+            grid.setItems(query -> teachersService.search(
+                currentSearchCriteria,
+                VaadinSpringDataHelpers.toSpringPageRequest(query)
+            ).stream());
+        } else {
+            grid.setItems(query -> teachersService.list(VaadinSpringDataHelpers.toSpringPageRequest(query)).stream());
+        }
+    }
+
     private void createEditorLayout(SplitLayout splitLayout) {
         Div editorLayoutDiv = new Div();
         editorLayoutDiv.setClassName("editor-layout");
@@ -157,6 +227,27 @@ public class TeachersView extends Div implements BeforeEnterObserver {
         editorDiv.setClassName("editor");
         editorLayoutDiv.add(editorDiv);
 
+        // Create search panel
+        VerticalLayout searchLayout = new VerticalLayout();
+        searchLayout.getStyle().set("border", "1px solid #ddd").set("padding", "10px").set("margin-bottom", "15px");
+        
+        FormLayout searchFormLayout = new FormLayout();
+        searchFirstName = new TextField("Search First Name");
+        searchLastName = new TextField("Search Last Name");
+        searchEmail = new TextField("Search Email");
+        searchCourseName = new TextField("Search Course Name");
+
+        searchFormLayout.add(searchFirstName, searchLastName, searchEmail, searchCourseName);
+
+        HorizontalLayout searchButtonLayout = new HorizontalLayout();
+        search.addThemeVariants(ButtonVariant.LUMO_PRIMARY);
+        reset.addThemeVariants(ButtonVariant.LUMO_TERTIARY);
+        searchButtonLayout.add(search, reset);
+        
+        searchLayout.add(searchFormLayout, searchButtonLayout);
+        editorDiv.add(searchLayout);
+
+        // Create edit form
         FormLayout formLayout = new FormLayout();
         firstName = new TextField("First Name");
         lastName = new TextField("Last Name");

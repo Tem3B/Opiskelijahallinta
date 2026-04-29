@@ -6,6 +6,7 @@ import jakarta.persistence.Entity;
 import jakarta.persistence.OneToMany;
 import jakarta.validation.constraints.Email;
 
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -17,6 +18,7 @@ public class Teachers extends AbstractEntity {
     @Email
     private String email;
     private String phone;
+    private LocalDateTime createdDate;
 
     @OneToMany(mappedBy = "teacher")
     private List<Courses> courses;
@@ -46,6 +48,14 @@ public class Teachers extends AbstractEntity {
     }
     public void setPhone(String phone) {
         this.phone = phone;
+    }
+
+    public LocalDateTime getCreatedDate() {
+        return createdDate;
+    }
+
+    public void setCreatedDate(LocalDateTime createdDate) {
+        this.createdDate = createdDate;
     }
 
 

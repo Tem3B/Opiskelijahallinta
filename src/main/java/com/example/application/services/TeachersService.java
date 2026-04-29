@@ -1,6 +1,7 @@
 package com.example.application.services;
 
 import com.example.application.data.Teachers;
+import com.example.application.data.TeacherSearchCriteria;
 import com.example.application.data.CoursesRepository;
 import com.example.application.data.TeachersRepository;
 import java.util.Optional;
@@ -45,6 +46,13 @@ public class TeachersService {
 
     public int count() {
         return (int) repository.count();
+    }
+
+    /**
+     * Search teachers using Criteria API with dynamic predicates
+     */
+    public Page<Teachers> search(TeacherSearchCriteria criteria, Pageable pageable) {
+        return repository.searchByCriteria(criteria, pageable);
     }
 
 }
