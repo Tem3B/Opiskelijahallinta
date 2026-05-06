@@ -36,7 +36,7 @@ import org.vaadin.lineawesome.LineAwesomeIconUrl;
 
 @PageTitle("Teachers")
 @Route(value = "teachers/:teachersID?/:action?(edit)", layout = MainLayout.class)
-@Menu(order = 3, icon = LineAwesomeIconUrl.ARROW_RIGHT_SOLID)
+@Menu(order = 3, icon = LineAwesomeIconUrl.GRADUATION_CAP_SOLID)
 public class TeachersView extends Div implements BeforeEnterObserver {
 
     private final String TEACHERS_ID = "teachersID";
@@ -55,6 +55,7 @@ public class TeachersView extends Div implements BeforeEnterObserver {
     private TextField lastName;
     private TextField email;
     private TextField phone;
+    private TextField department;
     private TextField coursesDisplay;
 
     //Buttons
@@ -91,6 +92,7 @@ public class TeachersView extends Div implements BeforeEnterObserver {
         grid.addColumn("lastName").setAutoWidth(true);
         grid.addColumn("email").setAutoWidth(true);
         grid.addColumn("phone").setAutoWidth(true);
+        grid.addColumn("department").setAutoWidth(true);
         grid.addColumn(teacher -> coursesService.findByTeacherId(teacher.getId()).stream()
                 .map(Courses::getName).toList().toString())
                 .setHeader("Courses")
@@ -253,9 +255,10 @@ public class TeachersView extends Div implements BeforeEnterObserver {
         lastName = new TextField("Last Name");
         email = new TextField("Email");
         phone = new TextField("Phone");
+        department = new TextField("Department");
         coursesDisplay = new TextField("Courses");
         coursesDisplay.setReadOnly(true);
-        formLayout.add(firstName, lastName, email, phone, coursesDisplay);
+        formLayout.add(firstName, lastName, email, phone, department, coursesDisplay);
 
         editorDiv.add(formLayout);
         createButtonLayout(editorLayoutDiv);

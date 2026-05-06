@@ -5,6 +5,7 @@ import com.vaadin.flow.component.applayout.DrawerToggle;
 import com.vaadin.flow.component.html.Footer;
 import com.vaadin.flow.component.html.H1;
 import com.vaadin.flow.component.html.Header;
+import com.vaadin.flow.component.html.Paragraph;
 import com.vaadin.flow.component.html.Span;
 import com.vaadin.flow.component.icon.SvgIcon;
 import com.vaadin.flow.component.orderedlayout.Scroller;
@@ -90,7 +91,27 @@ public class MainLayout extends AppLayout implements AfterNavigationObserver {
 
     private Footer createFooter() {
         Footer footer = new Footer();
-        footer.add(new Span("© 2026 Opiskelijahallintajärjestelmä."));
+        footer.addClassName("main-footer");
+
+        // Copyright and year
+        Span copyright = new Span("© 2026 Opiskelijahallintajärjestelmä");
+
+        // Author info
+        Span author = new Span("Teemu Lötjönen");
+        author.addClassNames(LumoUtility.FontSize.SMALL, LumoUtility.TextColor.SECONDARY);
+
+        // Version or info
+        Span version = new Span("Versio 1.0");
+        version.addClassNames(LumoUtility.FontSize.SMALL, LumoUtility.TextColor.SECONDARY);
+
+        footer.add(
+            copyright,
+            new Span(" | "),
+            author,
+            new Span(" | "),
+            version
+        );
+
         return footer;
     }
 

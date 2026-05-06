@@ -1,22 +1,211 @@
+/* ============================================
+   GLOBAALIT TYYLIT - Opiskelijahallintajärjestelmä
+   ============================================ */
+
+@import url('@fontsource/roboto/index.css');
+
+/* CSS-muuttujat (väripaletti) */
+html {
+  /* Päävärit - Moderni sininen-vihreä paletti */
+  --lumo-primary-color: #0d47a1;           /* Syvä sininen */
+  --lumo-primary-color-50pct: rgba(13, 71, 161, 0.5);
+  --lumo-primary-color-10pct: rgba(13, 71, 161, 0.1);
+
+  --lumo-secondary-color: #00897b;         /* Tekoali vihreä */
+  --lumo-tertiary-color: #5e35b1;          /* Tumma violetti */
+
+  /* Taustavärit */
+  --lumo-base-color: #ffffff;
+  --lumo-body-text-color: #222222;
+  --lumo-secondary-text-color: #666666;
+
+  /* Harmaa paletti */
+  --lumo-contrast-10pct: #f5f5f5;
+  --lumo-contrast-20pct: #eeeeee;
+  --lumo-contrast-30pct: #e0e0e0;
+  --lumo-contrast-50pct: #999999;
+
+  /* Värit statuksille */
+  --lumo-success-color: #4caf50;
+  --lumo-error-color: #f44336;
+  --lumo-warning-color: #ff9800;
+  --lumo-info-color: #2196f3;
+
+  /* Kaarevuus */
+  --lumo-border-radius-s: 4px;
+  --lumo-border-radius-m: 8px;
+  --lumo-border-radius-l: 12px;
+
+  /* Font-perhe */
+  --lumo-font-family: 'Roboto', 'Segoe UI', 'Helvetica Neue', sans-serif;
+}
+
+/* ============================================
+   PERUS KOMPONENTIT
+   ============================================ */
+
+html, body {
+  font-family: var(--lumo-font-family) !important;
+  color: var(--lumo-body-text-color);
+  background-color: var(--lumo-contrast-10pct);
+}
+
+h1, h2, h3, h4, h5, h6 {
+  font-family: var(--lumo-font-family) !important;
+  font-weight: 600;
+  color: var(--lumo-primary-color);
+}
+
+/* ============================================
+   VAADIN-KOMPONENTIT
+   ============================================ */
+
+/* AppLayout */
+vaadin-app-layout {
+  height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
+
+vaadin-app-layout::part(navbar) {
+  background: linear-gradient(135deg, var(--lumo-primary-color) 0%, #1565c0 100%);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+}
+
+vaadin-app-layout::part(drawer) {
+  background: linear-gradient(135deg, var(--lumo-primary-color) 0%, #1565c0 100%);
+  border-right: 1px solid rgba(0, 0, 0, 0.1);
+  display: flex;
+  flex-direction: column;
+}
+
+/* Drawer header teksti valkoiseksi */
+vaadin-app-layout::part(drawer) h1,
+vaadin-app-layout::part(drawer) span {
+  color: white !important;
+}
+
+/* Nappulat */
+vaadin-button::part(button) {
+  border-radius: var(--lumo-border-radius-m) !important;
+  font-family: var(--lumo-font-family) !important;
+  font-weight: 500;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  transition: all 0.3s ease;
+}
+
+vaadin-button[theme~="primary"]::part(button) {
+  background: linear-gradient(135deg, var(--lumo-primary-color) 0%, #1565c0 100%);
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.12);
+}
+
+vaadin-button[theme~="primary"]::part(button):hover {
+  box-shadow: 0 8px 16px rgba(0, 0, 0, 0.15);
+  transform: translateY(-2px);
+}
+
+vaadin-button[theme~="error"]::part(button) {
+  background-color: var(--lumo-error-color);
+}
+
+vaadin-button[theme~="error"]::part(button):hover {
+  background-color: #e53935;
+}
+
+/* Tekstikentät */
+vaadin-text-field::part(input-field) {
+  border-radius: var(--lumo-border-radius-m) !important;
+  background-color: var(--lumo-base-color);
+  border: 2px solid var(--lumo-contrast-20pct);
+  transition: border-color 0.2s ease;
+}
+
+vaadin-text-field::part(input-field):focus {
+  border-color: var(--lumo-primary-color);
+  box-shadow: 0 0 0 3px var(--lumo-primary-color-10pct);
+}
+
+/* ComboBox */
+vaadin-combo-box::part(input-field) {
+  border-radius: var(--lumo-border-radius-m) !important;
+}
+
+/* MultiSelectComboBox */
+vaadin-multi-select-combo-box::part(input-field) {
+  border-radius: var(--lumo-border-radius-m) !important;
+}
+
+/* Grid */
+vaadin-grid::part(header-cell) {
+  background-color: #f5f7fa;
+  font-weight: 600;
+  color: var(--lumo-primary-color);
+  border-bottom: 2px solid var(--lumo-primary-color);
+  padding: 12px;
+}
+
+vaadin-grid::part(body-cell) {
+  border-bottom: 1px solid var(--lumo-contrast-20pct);
+  padding: 12px;
+}
+
+vaadin-grid::part(row):hover {
+  background-color: var(--lumo-primary-color-10pct);
+}
+
+/* Dialog */
+vaadin-dialog::part(overlay) {
+  border-radius: var(--lumo-border-radius-m);
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.12);
+  background-color: var(--lumo-base-color);
+}
+
+/* SideNav */
+vaadin-sidenav {
+  flex: 1;
+}
+
+vaadin-sidenav::part(item) {
+  border-radius: 6px;
+  margin: 4px 8px;
+  transition: all 0.2s ease;
+  font-family: var(--lumo-font-family) !important;
+  color: white;
+}
+
+vaadin-sidenav::part(item)[current] {
+  background-color: rgba(255, 255, 255, 0.25);
+  color: white;
+  font-weight: 600;
+}
+
+footer {
+  background: linear-gradient(135deg, var(--lumo-primary-color) 0%, #1565c0 100%);
+  border-top: 1px solid rgba(0, 0, 0, 0.1);
+  padding: 16px;
+  text-align: center;
+  color: rgba(255, 255, 255, 0.9);
+  font-size: 12px;
+}
+
+/* Sticky Footer */
+.main-footer {
+  position: sticky;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  z-index: 100;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 4px;
+  flex-wrap: wrap;
+  margin-top: auto;
+}
+
+/* Importoi view-spesifiset tyylit */
 @import url('./main-layout.css');
 @import url('./views/students-view.css');
 @import url('./views/courses-view.css');
 @import url('./views/teachers-view.css');
-@import url('@fontsource/arvo/index.css');    html, spreadsheet-view-export, grid-with-filters-view-export {
-      --lumo-border-radius-s: calc(var(--lumo-size-m) / 6);
-      --lumo-border-radius-m: calc(var(--lumo-size-m) / 2);
-      --lumo-border-radius-l: var(--lumo-size-m);
---lumo-font-family: Arvo;
-
-    }
-
-    [theme~="dark"] {
-      --lumo-base-color: hsl(216, 30%, 13%);
-      --lumo-primary-color: hsl(148, 86%, 55%);
-      --lumo-primary-color-50pct: hsla(148, 86%, 55%, 0.5);
-      --lumo-primary-color-10pct: hsla(148, 86%, 55%, 0.1);
-      --lumo-primary-text-color: hsl(146, 100%, 70%);
-      --lumo-body-text-color: hsla(214, 11%, 76%, 0.9);
-      --lumo-success-text-color: hsl(113, 95%, 50%);
-
-    }

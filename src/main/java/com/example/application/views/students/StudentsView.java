@@ -37,7 +37,7 @@ import org.vaadin.lineawesome.LineAwesomeIconUrl;
 
 @PageTitle("Students")
 @Route(value = "students/:studentsID?/:action?(edit)", layout = MainLayout.class)
-@Menu(order = 1, icon = LineAwesomeIconUrl.ARROW_RIGHT_SOLID)
+@Menu(order = 1, icon = LineAwesomeIconUrl.USERS_SOLID)
 public class StudentsView extends Div implements BeforeEnterObserver {
 
     private final String STUDENTS_ID = "studentsID";

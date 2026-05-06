@@ -36,7 +36,7 @@ import org.vaadin.lineawesome.LineAwesomeIconUrl;
 
 @PageTitle("Courses")
 @Route(value = "courses/:coursesID?/:action?(edit)", layout = MainLayout.class)
-@Menu(order = 2, icon = LineAwesomeIconUrl.ARROW_RIGHT_SOLID)
+@Menu(order = 2, icon = LineAwesomeIconUrl.BOOK_SOLID)
 public class CoursesView extends Div implements BeforeEnterObserver {
 
     private final String COURSES_ID = "coursesID";
@@ -48,6 +48,7 @@ public class CoursesView extends Div implements BeforeEnterObserver {
     private ComboBox<Teachers> teacher;
     private TextField about;
     private TextField difficulty;
+    private TextField credits;
 
     private final Button cancel = new Button("Cancel");
     private final Button save = new Button("Save");
@@ -80,6 +81,7 @@ public class CoursesView extends Div implements BeforeEnterObserver {
 
         grid.addColumn("about").setAutoWidth(true);
         grid.addColumn("difficulty").setAutoWidth(true);
+        grid.addColumn("credits").setAutoWidth(true);
         grid.addColumn(course -> course.getStudents().size())
                 .setHeader("Students")
                 .setAutoWidth(true);
@@ -100,8 +102,14 @@ public class CoursesView extends Div implements BeforeEnterObserver {
         binder = new BeanValidationBinder<>(Courses.class);
 
         // Bind fields. This is where you'd define e.g. validation rules
-        binder.forField(difficulty).withConverter(new StringToIntegerConverter("Only numbers are allowed"))
+        binder.forField(difficulty)
+                .withNullRepresentation("")
+                .withConverter(new StringToIntegerConverter("Only numbers are allowed"))
                 .bind("difficulty");
+        binder.forField(credits)
+                .withNullRepresentation("")
+                .withConverter(new StringToIntegerConverter("Only numbers are allowed"))
+                .bind("credits");
 
         binder.bindInstanceFields(this);
 
@@ -167,7 +175,8 @@ public class CoursesView extends Div implements BeforeEnterObserver {
         teacher.setItemLabelGenerator(Teachers::getFullName);
         about = new TextField("About");
         difficulty = new TextField("Difficulty");
-        formLayout.add(name, teacher, about, difficulty);
+        credits = new TextField("Credits");
+        formLayout.add(name, teacher, about, difficulty, credits);
 
         editorDiv.add(formLayout);
         createButtonLayout(editorLayoutDiv);
